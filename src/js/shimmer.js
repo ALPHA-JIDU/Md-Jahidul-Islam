@@ -1,41 +1,41 @@
-export function bindImageShimmer(img, wrapper, onFallback) {
+export function bindImageShimmer(img, wrapper, onFallback, srcUrl) {
   if (!img || !wrapper) return;
 
+  let settled = false;
   wrapper.classList.add('img-shimmer');
   wrapper.classList.remove('is-loaded');
 
   const markLoaded = () => {
+    if (settled) return;
+    settled = true;
     wrapper.classList.add('is-loaded');
   };
 
   const handleError = () => {
+    if (settled) return;
+    settled = true;
     wrapper.classList.add('is-loaded');
     if (typeof onFallback === 'function') {
       onFallback();
     }
   };
 
+  img.addEventListener('load', markLoaded, { once: true });
+  img.addEventListener('error', handleError, { once: true });
+
+  if (srcUrl) {
+    img.src = srcUrl;
+  }
+
   if (img.complete) {
     if (img.naturalWidth > 0) {
-      requestAnimationFrame(markLoaded);
-    } else {
-      img.addEventListener('load', markLoaded, { once: true });
-      img.addEventListener('error', handleError, { once: true });
+      markLoaded();
+    } else if (typeof img.decode === 'function') {
+      img.decode().then(markLoaded).catch(() => {});
     }
-  } else {
-    img.addEventListener('load', markLoaded, { once: true });
-    img.addEventListener('error', handleError, { once: true });
+  } else if (typeof img.decode === 'function') {
+    img.decode().then(markLoaded).catch(() => {});
   }
-}
-
-export function initExistingShimmers(root = document) {
-  const wrappers = root.querySelectorAll('.img-shimmer');
-  wrappers.forEach((wrapper) => {
-    const img = wrapper.querySelector('img');
-    if (img) {
-      bindImageShimmer(img, wrapper);
-    }
-  });
 }
 
 export function createFallbackTile(titleText) {

@@ -34,38 +34,89 @@
   }
 }
 
-/* Seamless edge fade for centered monochrome hero portrait */
-.hero-portrait-mask {
-  -webkit-mask-image: radial-gradient(
-    ellipse 78% 82% at 50% 42%,
-    #000 54%,
-    rgba(0, 0, 0, 0.72) 74%,
-    transparent 96%
-  );
-  mask-image: radial-gradient(
-    ellipse 78% 82% at 50% 42%,
-    #000 54%,
-    rgba(0, 0, 0, 0.72) 74%,
-    transparent 96%
-  );
+/* Preloader Ship's Wheel Animation */
+@keyframes helmSpin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
-/* Mobile portrait bottom fade */
-.hero-mobile-mask {
-  -webkit-mask-image: linear-gradient(
-    to bottom,
-    #000 0%,
-    #000 66%,
-    rgba(0, 0, 0, 0.45) 86%,
-    transparent 100%
-  );
-  mask-image: linear-gradient(
-    to bottom,
-    #000 0%,
-    #000 66%,
-    rgba(0, 0, 0, 0.45) 86%,
-    transparent 100%
-  );
+.helm-wheel-spin {
+  animation: helmSpin 4.5s linear infinite;
+}
+
+.preloader-overlay {
+  transition: opacity 450ms cubic-bezier(0.16, 1, 0.3, 1),
+    visibility 450ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.preloader-overlay.is-hidden {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+/* Ship & 2-Line Wave Scroll Indicator */
+@keyframes shipBob {
+  0%,
+  100% {
+    transform: translateY(0px) rotate(-1.5deg);
+  }
+  50% {
+    transform: translateY(-2.5px) rotate(1.5deg);
+  }
+}
+
+@keyframes waveDriftA {
+  0%,
+  100% {
+    transform: translateX(0px);
+  }
+  50% {
+    transform: translateX(-5px);
+  }
+}
+
+@keyframes waveDriftB {
+  0%,
+  100% {
+    transform: translateX(-4px);
+  }
+  50% {
+    transform: translateX(3px);
+  }
+}
+
+.ship-bob {
+  transform-origin: center bottom;
+  animation: shipBob 2.8s ease-in-out infinite;
+}
+
+.wave-line-1 {
+  animation: waveDriftA 2.4s ease-in-out infinite;
+}
+
+.wave-line-2 {
+  animation: waveDriftB 3s ease-in-out infinite;
+}
+
+/* Hero portrait vignette overlays for seamless obsidian blending */
+.hero-portrait-vignette-desktop {
+  background:
+    radial-gradient(ellipse 46% 64% at 54% 40%, transparent 32%, rgba(8, 8, 8, 0.72) 72%, #080808 96%),
+    linear-gradient(to right, #080808 0%, rgba(8, 8, 8, 0.85) 18%, transparent 44%, transparent 74%, #080808 100%),
+    linear-gradient(to top, #080808 0%, rgba(8, 8, 8, 0.65) 16%, transparent 42%),
+    linear-gradient(to bottom, rgba(8, 8, 8, 0.65) 0%, transparent 22%);
+}
+
+.hero-portrait-vignette-mobile {
+  background:
+    radial-gradient(ellipse 70% 56% at 50% 34%, transparent 34%, rgba(8, 8, 8, 0.7) 78%, #080808 100%),
+    linear-gradient(to top, #080808 0%, #080808 18%, rgba(8, 8, 8, 0.85) 38%, rgba(8, 8, 8, 0.35) 58%, transparent 78%),
+    linear-gradient(to bottom, rgba(8, 8, 8, 0.5) 0%, transparent 20%);
 }
 
 /* Auto-scrolling quote transition */
@@ -79,7 +130,7 @@
   transform: translateY(6px);
 }
 
-/* Monochrome loading shimmer effect for images */
+/* Monochrome loading shimmer effect ONLY for gallery & blog images */
 @keyframes monochromeShimmer {
   0% {
     transform: translateX(-100%);
@@ -92,7 +143,7 @@
 .img-shimmer {
   position: relative;
   overflow: hidden;
-  background-color: #121212;
+  background-color: #141414;
 }
 
 .img-shimmer::before {
@@ -103,11 +154,11 @@
   background: linear-gradient(
     105deg,
     transparent 20%,
-    rgba(255, 255, 255, 0.08) 50%,
+    rgba(255, 255, 255, 0.09) 50%,
     transparent 80%
   );
   transform: translateX(-100%);
-  animation: monochromeShimmer 1.4s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  animation: monochromeShimmer 1.3s cubic-bezier(0.4, 0, 0.2, 1) infinite;
   pointer-events: none;
 }
 
@@ -123,23 +174,12 @@
 
 .img-shimmer img {
   opacity: 0;
-  transition: opacity 420ms cubic-bezier(0.16, 1, 0.3, 1),
+  transition: opacity 320ms cubic-bezier(0.16, 1, 0.3, 1),
     transform 500ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .img-shimmer.is-loaded img {
   opacity: 1;
-}
-
-/* Subtle hero vessel opacity target once loaded */
-.img-shimmer.hero-vessel-shimmer.is-loaded img {
-  opacity: 0.3;
-}
-
-@media (min-width: 768px) {
-  .img-shimmer.hero-vessel-shimmer.is-loaded img {
-    opacity: 0.8;
-  }
 }
 
 /* SPA View Enter Transition */

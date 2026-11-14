@@ -94,10 +94,8 @@ function renderModal(idx) {
   const exifEl = document.getElementById('lightbox-exif');
 
   if (imgEl && imgWrap) {
-    imgWrap.classList.remove('is-loaded');
-    imgEl.src = photo.src;
     imgEl.alt = photo.alt;
-    bindImageShimmer(imgEl, imgWrap);
+    bindImageShimmer(imgEl, imgWrap, null, photo.src);
   }
   if (titleEl) titleEl.textContent = photo.title;
   if (categoryEl) categoryEl.textContent = `${photo.category} · ${photo.year}`;

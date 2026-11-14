@@ -1,5 +1,5 @@
 export const HERO_MEDIA = {
-  portrait: './src/assets/images/mariner_portrait_1794666444309.jpg',
+  portrait: './src/assets/images/Picsart_26-11-14_22-21-08-763_d8c22dd8.jpg',
   vesselBackdrop: './src/assets/images/maritime_vessel_mist_1794666445117.jpg',
 };
 

@@ -1,27 +1,5 @@
-import { INITIAL_BLOG_POSTS, GALLERY_PHOTOS } from './data.js';
+import { INITIAL_BLOG_POSTS } from './data.js';
 import { bindImageShimmer, createFallbackTile } from './shimmer.js';
-
-const STORAGE_KEY = 'jihad_sea_journal_posts_v1';
-
-function loadPosts() {
-  try {
-    const raw = window.localStorage.getItem(STORAGE_KEY);
-    if (!raw) return [...INITIAL_BLOG_POSTS];
-    const parsed = JSON.parse(raw);
-    if (Array.isArray(parsed) && parsed.length > 0) return parsed;
-  } catch {
-    // Fallback to initial posts
-  }
-  return [...INITIAL_BLOG_POSTS];
-}
-
-function savePosts(posts) {
-  try {
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(posts));
-  } catch {
-    // Ignore storage quota errors
-  }
-}
 
 export function renderBlogView(container) {
   container.innerHTML = `
@@ -29,7 +7,7 @@ export function renderBlogView(container) {
       <header class="border-b border-white/8 bg-[#080808]">
         <div class="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 h-16 flex items-center justify-between gap-6">
           <a
-            href="index.html"
+            href="./index.html"
             data-spa-link="home"
             class="inline-flex items-center gap-2 min-h-[44px] text-xs sm:text-sm text-neutral-300 hover:text-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white rounded-md whitespace-nowrap shrink-0"
           >
@@ -38,16 +16,6 @@ export function renderBlogView(container) {
             </svg>
             <span>Back to Home</span>
           </a>
-
-          <button
-            id="blog-compose-toggle"
-            type="button"
-            aria-expanded="false"
-            aria-controls="blog-composer-panel"
-            class="inline-flex items-center gap-2 min-h-[40px] px-4 py-1.5 rounded-full border border-white/25 text-xs font-medium text-white hover:bg-white hover:text-neutral-950 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white cursor-pointer whitespace-nowrap shrink-0"
-          >
-            <span>Share New Post</span>
-          </button>
         </div>
       </header>
 
@@ -64,102 +32,6 @@ export function renderBlogView(container) {
             <p class="mt-3 text-sm sm:text-base text-neutral-400 max-w-xl leading-relaxed">
               Stories from maritime passages, darkroom notes, and quiet observations written along the horizon.
             </p>
-          </div>
-        </section>
-
-        <!-- Publish / Share New Post Composer Drawer -->
-        <section
-          id="blog-composer-panel"
-          aria-label="Share a new blog post"
-          class="hidden border-b border-white/8 bg-[#0b0b0b]"
-        >
-          <div class="max-w-3xl mx-auto px-6 sm:px-8 py-10">
-            <div class="flex items-center justify-between gap-4 mb-6">
-              <h2 class="font-serif text-2xl text-white">Publish a Journal Entry</h2>
-              <button
-                id="blog-composer-cancel"
-                type="button"
-                class="min-h-[40px] px-3 text-xs text-neutral-400 hover:text-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white rounded-md cursor-pointer"
-              >
-                Cancel
-              </button>
-            </div>
-
-            <form id="blog-composer-form" novalidate class="space-y-4">
-              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label for="post-title" class="block text-xs text-neutral-400 mb-1.5">Post Title</label>
-                  <input
-                    id="post-title"
-                    name="title"
-                    type="text"
-                    placeholder="e.g. Anchoring Off Singapore at Dawn"
-                    class="w-full min-h-[44px] px-4 py-2.5 rounded-lg bg-[#111111] border border-white/12 text-sm text-white placeholder:text-neutral-500 focus:outline-none focus:border-white/40 focus-visible:ring-2 focus-visible:ring-white"
-                  />
-                </div>
-
-                <div>
-                  <label for="post-category" class="block text-xs text-neutral-400 mb-1.5">Category</label>
-                  <select
-                    id="post-category"
-                    name="category"
-                    class="w-full min-h-[44px] px-4 py-2.5 rounded-lg bg-[#111111] border border-white/12 text-sm text-white focus:outline-none focus:border-white/40 focus-visible:ring-2 focus-visible:ring-white"
-                  >
-                    <option value="Voyage Logs">Voyage Logs</option>
-                    <option value="Photography">Photography</option>
-                    <option value="Reflections">Reflections</option>
-                  </select>
-                </div>
-              </div>
-
-              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label for="post-location" class="block text-xs text-neutral-400 mb-1.5">Location or Coordinates</label>
-                  <input
-                    id="post-location"
-                    name="location"
-                    type="text"
-                    placeholder="e.g. Bay of Bengal"
-                    class="w-full min-h-[44px] px-4 py-2.5 rounded-lg bg-[#111111] border border-white/12 text-sm text-white placeholder:text-neutral-500 focus:outline-none focus:border-white/40 focus-visible:ring-2 focus-visible:ring-white"
-                  />
-                </div>
-
-                <div>
-                  <label for="post-cover" class="block text-xs text-neutral-400 mb-1.5">Cover Photograph</label>
-                  <select
-                    id="post-cover"
-                    name="cover"
-                    class="w-full min-h-[44px] px-4 py-2.5 rounded-lg bg-[#111111] border border-white/12 text-sm text-white focus:outline-none focus:border-white/40 focus-visible:ring-2 focus-visible:ring-white"
-                  >
-                    ${GALLERY_PHOTOS.map(
-                      (photo, index) => `<option value="${index}">${photo.title}</option>`
-                    ).join('')}
-                  </select>
-                </div>
-              </div>
-
-              <div>
-                <label for="post-body" class="block text-xs text-neutral-400 mb-1.5">Story Content</label>
-                <textarea
-                  id="post-body"
-                  name="body"
-                  rows="5"
-                  placeholder="Write your reflection or voyage story..."
-                  class="w-full px-4 py-3 rounded-lg bg-[#111111] border border-white/12 text-sm text-white placeholder:text-neutral-500 focus:outline-none focus:border-white/40 focus-visible:ring-2 focus-visible:ring-white resize-y"
-                ></textarea>
-              </div>
-
-              <p id="post-form-error" class="hidden text-xs text-red-400"></p>
-
-              <div class="flex justify-end pt-2">
-                <button
-                  type="submit"
-                  class="min-h-[44px] px-6 py-2.5 rounded-full bg-white text-neutral-950 text-xs sm:text-sm font-medium hover:bg-neutral-200 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white cursor-pointer"
-                >
-                  Publish Post
-                </button>
-              </div>
-            </form>
           </div>
         </section>
 
@@ -247,7 +119,7 @@ export function renderBlogView(container) {
                 type="button"
                 class="min-h-[40px] px-4 py-1.5 rounded-full border border-white/25 text-xs font-medium text-white hover:bg-white hover:text-neutral-950 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white cursor-pointer"
               >
-                Copy Share Link
+                Copy Link
               </button>
             </div>
           </div>
@@ -256,18 +128,13 @@ export function renderBlogView(container) {
     </div>
   `;
 
-  let posts = loadPosts();
+  const posts = [...INITIAL_BLOG_POSTS];
   let activeCategory = 'All';
   let lastFocusedEl = null;
 
   const grid = container.querySelector('#blog-grid');
   const countEl = container.querySelector('#blog-count');
   const tabs = container.querySelectorAll('[data-blog-filter]');
-  const composeToggle = container.querySelector('#blog-compose-toggle');
-  const composePanel = container.querySelector('#blog-composer-panel');
-  const composeCancel = container.querySelector('#blog-composer-cancel');
-  const composeForm = container.querySelector('#blog-composer-form');
-  const formError = container.querySelector('#post-form-error');
 
   const readerModal = container.querySelector('#blog-reader-modal');
   const readerClose = container.querySelector('#reader-close');
@@ -285,10 +152,8 @@ export function renderBlogView(container) {
     lastFocusedEl = document.activeElement;
 
     if (readerCover && readerCoverWrap) {
-      readerCoverWrap.classList.remove('is-loaded');
-      readerCover.src = post.coverSrc;
       readerCover.alt = post.coverAlt;
-      bindImageShimmer(readerCover, readerCoverWrap);
+      bindImageShimmer(readerCover, readerCoverWrap, null, post.coverSrc);
     }
 
     if (readerMeta) {
@@ -303,7 +168,7 @@ export function renderBlogView(container) {
         readerBody.appendChild(p);
       });
     }
-    if (readerShare) readerShare.textContent = 'Copy Share Link';
+    if (readerShare) readerShare.textContent = 'Copy Link';
 
     readerModal?.classList.remove('hidden');
     readerModal?.classList.add('flex');
@@ -338,10 +203,10 @@ export function renderBlogView(container) {
       await navigator.clipboard.writeText(shareUrl);
       readerShare.textContent = 'Link Copied';
       window.setTimeout(() => {
-        if (readerShare) readerShare.textContent = 'Copy Share Link';
+        if (readerShare) readerShare.textContent = 'Copy Link';
       }, 1800);
     } catch {
-      readerShare.textContent = 'Ready to Share';
+      readerShare.textContent = 'Ready';
     }
   });
 
@@ -368,14 +233,19 @@ export function renderBlogView(container) {
       mediaBtn.setAttribute('aria-label', `Read blog post: ${post.title}`);
 
       const img = document.createElement('img');
-      img.src = post.coverSrc;
       img.alt = post.coverAlt;
-      img.loading = 'lazy';
+      img.loading = 'eager';
+      img.decoding = 'async';
       img.referrerPolicy = 'no-referrer';
       img.className = 'w-full h-full object-cover grayscale contrast-110 hover:scale-[1.03]';
-      bindImageShimmer(img, mediaBtn, () => {
-        img.replaceWith(createFallbackTile(post.title));
-      });
+      bindImageShimmer(
+        img,
+        mediaBtn,
+        () => {
+          img.replaceWith(createFallbackTile(post.title));
+        },
+        post.coverSrc
+      );
       mediaBtn.appendChild(img);
       mediaBtn.addEventListener('click', () => openReader(post));
 
@@ -432,70 +302,6 @@ export function renderBlogView(container) {
       });
       renderFeed();
     });
-  });
-
-  const setComposerOpen = (isOpen) => {
-    composeToggle?.setAttribute('aria-expanded', String(isOpen));
-    if (isOpen) {
-      composePanel?.classList.remove('hidden');
-      container.querySelector('#post-title')?.focus();
-    } else {
-      composePanel?.classList.add('hidden');
-    }
-  };
-
-  composeToggle?.addEventListener('click', () => {
-    const isCurrentlyOpen = composeToggle.getAttribute('aria-expanded') === 'true';
-    setComposerOpen(!isCurrentlyOpen);
-  });
-
-  composeCancel?.addEventListener('click', () => setComposerOpen(false));
-
-  composeForm?.addEventListener('submit', (e) => {
-    e.preventDefault();
-    const titleVal = container.querySelector('#post-title')?.value.trim() || '';
-    const catVal = container.querySelector('#post-category')?.value || 'Voyage Logs';
-    const locVal = container.querySelector('#post-location')?.value.trim() || 'At Sea';
-    const coverIdx = Number(container.querySelector('#post-cover')?.value || 0);
-    const bodyVal = container.querySelector('#post-body')?.value.trim() || '';
-
-    if (titleVal.length < 3 || bodyVal.length < 15) {
-      if (formError) {
-        formError.textContent = 'Please enter a title and at least a short paragraph for your post.';
-        formError.classList.remove('hidden');
-      }
-      return;
-    }
-
-    formError?.classList.add('hidden');
-    const coverPhoto = GALLERY_PHOTOS[coverIdx] || GALLERY_PHOTOS[0];
-    const paragraphs = bodyVal
-      .split(/\n\s*\n/)
-      .map((p) => p.trim())
-      .filter(Boolean);
-
-    const words = bodyVal.split(/\s+/).length;
-    const readTime = `${Math.max(1, Math.ceil(words / 180))} min read`;
-    const nowLabel = new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
-
-    const newPost = {
-      id: `post-${Date.now()}`,
-      title: titleVal,
-      category: catVal,
-      date: nowLabel,
-      readTime,
-      location: locVal,
-      coverSrc: coverPhoto.src,
-      coverAlt: coverPhoto.alt,
-      excerpt: paragraphs[0].slice(0, 150) + (paragraphs[0].length > 150 ? '…' : ''),
-      paragraphs,
-    };
-
-    posts = [newPost, ...posts];
-    savePosts(posts);
-    composeForm.reset();
-    setComposerOpen(false);
-    renderFeed();
   });
 
   renderFeed();

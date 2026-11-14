@@ -105,15 +105,20 @@ export function renderGalleryView(container) {
       btn.setAttribute('aria-label', `Inspect photograph: ${photo.title}`);
 
       const img = document.createElement('img');
-      img.src = photo.src;
       img.alt = photo.alt;
-      img.loading = 'lazy';
+      img.loading = 'eager';
+      img.decoding = 'async';
       img.referrerPolicy = 'no-referrer';
       img.className = 'w-full h-full object-cover grayscale contrast-110 group-hover:scale-[1.04]';
 
-      bindImageShimmer(img, btn, () => {
-        img.replaceWith(createFallbackTile(photo.title));
-      });
+      bindImageShimmer(
+        img,
+        btn,
+        () => {
+          img.replaceWith(createFallbackTile(photo.title));
+        },
+        photo.src
+      );
 
       const scrim = document.createElement('div');
       scrim.setAttribute('aria-hidden', 'true');

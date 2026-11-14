@@ -1,5 +1,5 @@
 import { HERO_MEDIA, HOME_QUOTES, GALLERY_PHOTOS } from './data.js';
-import { bindImageShimmer, initExistingShimmers, createFallbackTile } from './shimmer.js';
+import { bindImageShimmer, createFallbackTile } from './shimmer.js';
 import { initLightbox, openLightbox } from './lightbox.js';
 import { renderQuotesView } from './quotesView.js';
 import { renderGalleryView } from './galleryView.js';
@@ -33,59 +33,166 @@ function resolveRouteFromLocation() {
   return document.body.getAttribute('data-route') || 'home';
 }
 
-function renderHomeView(container) {
+function dismissPreloader() {
+  const preloader = document.getElementById('page-preloader');
+  if (!preloader) return;
+  preloader.classList.add('is-hidden');
+  preloader.setAttribute('aria-hidden', 'true');
+  window.setTimeout(() => {
+    preloader.style.display = 'none';
+  }, 480);
+}
+
+function waitForPortraitPreload(portraitImgEl) {
+  const preloader = document.getElementById('page-preloader');
+  if (!preloader || !portraitImgEl) {
+    dismissPreloader();
+    return;
+  }
+
+  let finished = false;
+  const finish = () => {
+    if (finished) return;
+    finished = true;
+    window.setTimeout(dismissPreloader, 220);
+  };
+
+  if (portraitImgEl.complete && portraitImgEl.naturalWidth > 0) {
+    finish();
+    return;
+  }
+
+  portraitImgEl.addEventListener('load', finish, { once: true });
+  portraitImgEl.addEventListener('error', finish, { once: true });
+
+  if (typeof portraitImgEl.decode === 'function') {
+    portraitImgEl.decode().then(finish).catch(() => {});
+  }
+
+  // Safety timeout so preloader never hangs on slow networks
+  window.setTimeout(finish, 4000);
+}
+
+function renderShipWaveIndicator() {
+  return `
+    <span class="inline-flex flex-col items-center justify-center gap-1" aria-hidden="true">
+      <svg viewBox="0 0 64 36" class="w-12 h-8 text-neutral-200 group-hover:text-white transition-colors" fill="none">
+        <!-- Sailing Vessel Silhouette -->
+        <g class="ship-bob">
+          <path d="M16 19H48L44.5 24.5H19.5L16 19Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" />
+          <path d="M25 19V13.5H36V19" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round" />
+          <path d="M30.5 13.5V7M27.5 9.5H33.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" />
+        </g>
+        <!-- 2-Line Animated Ocean Waves -->
+        <path
+          class="wave-line-1"
+          d="M8 28.5C12 26.5 16 26.5 20 28.5C24 30.5 28 30.5 32 28.5C36 26.5 40 26.5 44 28.5C48 30.5 52 30.5 56 28.5"
+          stroke="currentColor"
+          stroke-width="1.35"
+          stroke-linecap="round"
+        />
+        <path
+          class="wave-line-2"
+          d="M11 33C15 31 19 31 23 33C27 35 31 35 35 33C39 31 43 31 47 33C50 34.5 53 34.5 56 33"
+          stroke="currentColor"
+          stroke-opacity="0.55"
+          stroke-width="1.2"
+          stroke-linecap="round"
+        />
+      </svg>
+    </span>
+  `;
+}
+
+function renderHomeView(container, { waitPreloader = false } = {}) {
   container.innerHTML = `
     <div class="min-h-screen flex flex-col bg-[#080808] spa-view-active">
       <main id="main-content" tabindex="-1" class="flex-1 focus:outline-none">
-        <!-- HERO SECTION (Full-bleed monochrome matching desktop & mobile reference views) -->
+        <!-- HERO SECTION (Fixed Portrait Vignette Shadows + Orbital Ring + Ship/Wave Scroll) -->
         <section
           id="home"
           aria-label="Introduction"
-          class="relative overflow-hidden bg-[#080808] min-h-[86svh] md:min-h-[600px] lg:min-h-[660px] flex flex-col justify-end md:justify-between border-b border-white/8"
+          class="relative overflow-hidden bg-[#080808] min-h-[88svh] md:min-h-[610px] lg:min-h-[670px] flex flex-col justify-end md:justify-between border-b border-white/8"
         >
-          <!-- Background Vessel Layer -->
+          <!-- Right Misty Merchant Ship Backdrop (NO shimmer) -->
           <div
             aria-hidden="true"
-            class="img-shimmer hero-vessel-shimmer absolute inset-0 md:left-[34%] pointer-events-none select-none overflow-hidden"
+            class="hidden md:block absolute inset-y-0 right-0 w-[48%] lg:w-[44%] pointer-events-none select-none overflow-hidden"
           >
             <img
-              data-hero-vessel
               src="${HERO_MEDIA.vesselBackdrop}"
               alt=""
               referrerPolicy="no-referrer"
-              class="w-full h-full object-cover object-right grayscale contrast-125 translate-y-12 md:translate-y-0"
+              class="w-full h-full object-cover object-right opacity-55 grayscale contrast-125"
             />
-            <div class="absolute inset-0 z-10 bg-gradient-to-r from-[#080808] via-[#080808]/55 to-transparent"></div>
-            <div class="absolute inset-0 z-10 bg-gradient-to-t from-[#080808] via-transparent to-[#080808]/60"></div>
+            <div class="absolute inset-0 bg-gradient-to-r from-[#080808] via-[#080808]/60 to-transparent"></div>
+            <div class="absolute inset-0 bg-gradient-to-t from-[#080808] via-transparent to-[#080808]/65"></div>
           </div>
 
-          <!-- Centered Portrait + Subtle Circular Orbital Ring -->
+          <!-- Mobile Background Ship Hint (NO shimmer) -->
           <div
             aria-hidden="true"
-            class="absolute inset-0 flex items-end justify-center pointer-events-none select-none overflow-hidden"
+            class="md:hidden absolute inset-x-0 bottom-16 h-[50%] pointer-events-none select-none overflow-hidden"
           >
-            <div
-              class="absolute top-[7%] md:top-[6%] left-1/2 -translate-x-1/2 w-[78vw] h-[78vw] max-w-[340px] max-h-[340px] md:w-[440px] md:h-[440px] md:max-w-none md:max-h-none lg:w-[510px] lg:h-[510px] rounded-full border border-white/14"
-            ></div>
+            <img
+              src="${HERO_MEDIA.vesselBackdrop}"
+              alt=""
+              referrerPolicy="no-referrer"
+              class="w-full h-full object-cover object-right opacity-25 grayscale contrast-125"
+            />
+            <div class="absolute inset-0 bg-gradient-to-t from-[#080808] via-transparent to-[#080808]"></div>
+          </div>
 
-            <div class="img-shimmer relative w-full max-w-[440px] md:max-w-[480px] lg:max-w-[540px] h-[94%] md:h-[96%] flex items-end justify-center">
+          <!-- Portrait Layer (NO shimmer, clean edge-to-edge vignette blending) -->
+          <div
+            aria-hidden="true"
+            class="absolute inset-0 pointer-events-none select-none overflow-hidden"
+          >
+            <!-- Desktop Portrait Container (Center-Right focal zone) -->
+            <div class="hidden md:block absolute top-0 bottom-0 left-[22%] right-[12%] lg:left-[24%] lg:right-[15%]">
+              <!-- Orbital Ring centered behind head/shoulders -->
+              <div
+                class="absolute top-[7%] left-1/2 -translate-x-1/2 w-[420px] h-[420px] lg:w-[490px] lg:h-[490px] rounded-full border border-white/15 z-10"
+              ></div>
+
               <img
-                data-hero-portrait
+                id="hero-portrait-desktop"
                 src="${HERO_MEDIA.portrait}"
                 alt="Monochrome portrait of Jahidul Islam Jihad"
                 referrerPolicy="no-referrer"
-                class="w-full h-full object-cover object-top grayscale contrast-115 hero-mobile-mask md:hero-portrait-mask"
+                class="w-full h-full object-cover object-[52%_14%] grayscale contrast-115"
               />
+
+              <!-- Precision Multi-Edge Shadow Scrims -->
+              <div class="hero-portrait-vignette-desktop absolute inset-0 z-10"></div>
+            </div>
+
+            <!-- Mobile Portrait Container (Full-bleed upper-center, seamless dark bottom scrim) -->
+            <div class="md:hidden absolute inset-x-0 top-0 h-[86%]">
+              <div
+                class="absolute top-[7%] left-1/2 -translate-x-1/2 w-[74vw] h-[74vw] max-w-[310px] max-h-[310px] rounded-full border border-white/16 z-10"
+              ></div>
+
+              <img
+                id="hero-portrait-mobile"
+                src="${HERO_MEDIA.portrait}"
+                alt="Monochrome portrait of Jahidul Islam Jihad"
+                referrerPolicy="no-referrer"
+                class="w-full h-full object-cover object-[52%_14%] grayscale contrast-115"
+              />
+
+              <!-- Precision Mobile Vignette & Lower Scrim -->
+              <div class="hero-portrait-vignette-mobile absolute inset-0 z-10"></div>
             </div>
           </div>
 
-          <!-- Mobile Dark Contrast Scrim -->
+          <!-- Desktop Left Protection Scrim so typography always sits on clean obsidian -->
           <div
             aria-hidden="true"
-            class="md:hidden absolute inset-0 z-10 bg-gradient-to-t from-[#080808] via-[#080808]/55 to-transparent pointer-events-none"
+            class="hidden md:block absolute inset-y-0 left-0 w-[46%] bg-gradient-to-r from-[#080808] via-[#080808]/92 to-transparent z-10 pointer-events-none"
           ></div>
 
-          <!-- Foreground Typography & Scroll Cue -->
+          <!-- Foreground Typography & Ship-Wave Scroll Indicator -->
           <div
             class="relative z-20 w-full max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 pt-16 pb-7 md:pt-20 md:pb-12 flex-1 flex flex-col justify-end md:justify-between"
           >
@@ -116,7 +223,8 @@ function renderHomeView(container) {
               </div>
             </div>
 
-            <div class="mt-10 md:mt-12 flex items-end justify-center md:justify-between gap-6 relative">
+            <!-- Bottom Row: Animated Ship & 2-Line Waves (Center on Mobile, Left on Desktop) + Poetic Tagline (Right on Desktop) -->
+            <div class="mt-9 md:mt-12 flex items-end justify-center md:justify-between gap-6 relative">
               <span
                 aria-hidden="true"
                 class="md:hidden absolute left-0 bottom-3 w-20 h-px bg-white/25"
@@ -124,16 +232,11 @@ function renderHomeView(container) {
 
               <a
                 href="#quotes"
-                aria-label="Scroll down to quotes and biography"
-                class="inline-flex items-center gap-2.5 min-h-[44px] px-2 text-xs tracking-wide text-neutral-300 hover:text-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white rounded-md group"
+                aria-label="Scroll down to quotes, biography, and gallery"
+                title="Scroll down"
+                class="inline-flex items-center justify-center min-h-[44px] min-w-[44px] px-2 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white group"
               >
-                <span
-                  aria-hidden="true"
-                  class="inline-flex items-start justify-center w-4 h-6 rounded-full border border-neutral-400 group-hover:border-white p-1 transition-colors"
-                >
-                  <span class="w-0.5 h-1.5 rounded-full bg-neutral-200 transition-transform duration-200 group-hover:translate-y-0.5"></span>
-                </span>
-                <span>Scroll Down</span>
+                ${renderShipWaveIndicator()}
               </a>
 
               <div class="hidden md:flex flex-col items-end text-right">
@@ -155,8 +258,8 @@ function renderHomeView(container) {
           class="bg-[#080808] border-b border-white/8"
         >
           <div class="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 py-12 md:py-16">
-            <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-0 items-center">
-              <!-- Column 1: Auto-Scrolling Quote Carousel -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-0 items-start">
+              <!-- Column 1: Auto-Scrolling Quote Carousel + Dedicated All Quotes Button -->
               <div id="quote-carousel" class="lg:col-span-4 lg:pr-10 flex flex-col justify-between">
                 <div class="flex items-start gap-3">
                   <span
@@ -204,14 +307,6 @@ Live deeper.</blockquote>
                         <path stroke-linecap="round" stroke-linejoin="round" d="M9 18l6-6-6-6" />
                       </svg>
                     </button>
-
-                    <a
-                      href="quotes.html"
-                      data-spa-link="quotes"
-                      class="ml-1 text-xs text-neutral-400 hover:text-white underline underline-offset-4 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white rounded-sm whitespace-nowrap"
-                    >
-                      All Quotes
-                    </a>
                   </div>
 
                   <svg
@@ -231,10 +326,24 @@ Live deeper.</blockquote>
                     <path d="M42 13L43 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
                   </svg>
                 </div>
+
+                <!-- Eye-Catching Dedicated All Quotes Button -->
+                <div class="mt-6 pl-8">
+                  <a
+                    href="./quotes.html"
+                    data-spa-link="quotes"
+                    class="inline-flex items-center justify-center gap-2.5 min-h-[44px] px-5 py-2.5 rounded-full border border-white/25 bg-white/[0.04] text-xs font-medium tracking-wide text-white hover:bg-white hover:text-neutral-950 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white whitespace-nowrap shrink-0"
+                  >
+                    <span>Explore All Quotes</span>
+                    <svg viewBox="0 0 24 24" class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14m-6-6l6 6-6 6" />
+                    </svg>
+                  </a>
+                </div>
               </div>
 
-              <!-- Column 2: Short Bio + Sea Journal Link -->
-              <div class="lg:col-span-5 lg:px-10 lg:border-l lg:border-white/10 space-y-4">
+              <!-- Column 2: Bio + Eye-Catching Dedicated Sea Journal & Essays Button -->
+              <div class="lg:col-span-5 lg:px-10 lg:border-l lg:border-white/10 flex flex-col justify-between gap-6">
                 <p class="text-sm sm:text-[15px] leading-[1.75] text-neutral-400 max-w-prose">
                   I&apos;m a <strong class="font-semibold text-white">sailor at heart</strong>, a
                   photographer by passion, and a lifelong learner. Through my lens and words, I try to
@@ -243,12 +352,12 @@ Live deeper.</blockquote>
 
                 <div>
                   <a
-                    href="blog.html"
+                    href="./blog.html"
                     data-spa-link="blog"
-                    class="inline-flex items-center gap-2 text-xs font-medium tracking-wide text-neutral-300 hover:text-white underline underline-offset-4 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white rounded-sm"
+                    class="inline-flex items-center justify-center gap-2.5 min-h-[46px] px-6 py-2.5 rounded-full bg-white text-neutral-950 text-xs sm:text-sm font-medium tracking-wide hover:bg-neutral-200 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#080808] whitespace-nowrap shrink-0 shadow-sm"
                   >
                     <span>Read Sea Journal &amp; Essays</span>
-                    <svg viewBox="0 0 24 24" class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true">
                       <path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14m-6-6l6 6-6 6" />
                     </svg>
                   </a>
@@ -256,7 +365,7 @@ Live deeper.</blockquote>
               </div>
 
               <!-- Column 3: Maritime & Photography Metrics -->
-              <div class="lg:col-span-3 lg:pl-10 lg:border-l lg:border-white/10">
+              <div class="lg:col-span-3 lg:pl-10 lg:border-l lg:border-white/10 self-center w-full">
                 <dl class="grid grid-cols-3 gap-4 sm:gap-6 text-center lg:text-left">
                   <div class="flex flex-col items-center lg:items-start">
                     <dt class="order-2 mt-1.5 text-[11px] sm:text-xs leading-snug text-neutral-400">
@@ -307,7 +416,7 @@ Live deeper.</blockquote>
               </div>
 
               <a
-                href="gallery.html"
+                href="./gallery.html"
                 data-spa-link="gallery"
                 class="inline-flex items-center gap-2 min-h-[44px] px-2 text-xs sm:text-sm font-medium tracking-wide text-neutral-300 hover:text-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white rounded-md whitespace-nowrap shrink-0"
               >
@@ -488,32 +597,27 @@ Live deeper.</blockquote>
 
           <div class="mt-12 pt-6 border-t border-white/8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-neutral-400">
             <p>&copy; 2026 Jahidul Islam Jihad. All rights reserved.</p>
-            <div class="flex flex-wrap items-center justify-center gap-4">
-              <a
-                href="blog.html"
-                data-spa-link="blog"
-                class="text-neutral-300 hover:text-white underline underline-offset-4 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white rounded-sm"
-              >
-                Sea Journal
-              </a>
+            <p class="inline-flex items-center gap-2">
+              <span>Designed with passion</span>
               <span aria-hidden="true">&middot;</span>
-              <p class="inline-flex items-center gap-2">
-                <span>Designed with passion</span>
-                <span aria-hidden="true">&middot;</span>
-                <span>Inspired by the sea</span>
-                <svg viewBox="0 0 24 24" class="w-3.5 h-3.5 text-neutral-400" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M2 12c2.5-2.5 5-2.5 7.5 0s5 2.5 7.5 0 4.5-2 5-1.5M2 17c2.5-2.5 5-2.5 7.5 0s5 2.5 7.5 0 4.5-2 5-1.5" />
-                </svg>
-              </p>
-            </div>
+              <span>Inspired by the sea</span>
+              <svg viewBox="0 0 24 24" class="w-3.5 h-3.5 text-neutral-400" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M2 12c2.5-2.5 5-2.5 7.5 0s5 2.5 7.5 0 4.5-2 5-1.5M2 17c2.5-2.5 5-2.5 7.5 0s5 2.5 7.5 0 4.5-2 5-1.5" />
+              </svg>
+            </p>
           </div>
         </div>
       </footer>
     </div>
   `;
 
-  // Initialize shimmer on Hero images
-  initExistingShimmers(container);
+  if (waitPreloader) {
+    const isMobileViewport = window.matchMedia('(max-width: 767px)').matches;
+    const portraitTarget = container.querySelector(
+      isMobileViewport ? '#hero-portrait-mobile' : '#hero-portrait-desktop'
+    );
+    waitForPortraitPreload(portraitTarget);
+  }
 
   // Initialize Auto-Scrolling Quotes
   const quoteCarousel = container.querySelector('#quote-carousel');
@@ -577,7 +681,7 @@ Live deeper.</blockquote>
 
   startAutoScroll();
 
-  // Initialize Home Bento & Mobile Strip with Shimmer
+  // Initialize Home Bento & Mobile Strip with fixed Shimmer ONLY on gallery tiles
   function createTile(photo, idx, extraClasses) {
     const button = document.createElement('button');
     button.type = 'button';
@@ -585,15 +689,20 @@ Live deeper.</blockquote>
     button.setAttribute('aria-label', `View photograph: ${photo.title} (${photo.category})`);
 
     const img = document.createElement('img');
-    img.src = photo.src;
     img.alt = photo.alt;
-    img.loading = 'lazy';
+    img.loading = 'eager';
+    img.decoding = 'async';
     img.referrerPolicy = 'no-referrer';
     img.className = 'w-full h-full object-cover grayscale contrast-110 group-hover:scale-[1.04]';
 
-    bindImageShimmer(img, button, () => {
-      img.replaceWith(createFallbackTile(photo.title));
-    });
+    bindImageShimmer(
+      img,
+      button,
+      () => {
+        img.replaceWith(createFallbackTile(photo.title));
+      },
+      photo.src
+    );
 
     const scrim = document.createElement('div');
     scrim.setAttribute('aria-hidden', 'true');
@@ -740,7 +849,7 @@ Live deeper.</blockquote>
 
 let currentCleanup = null;
 
-function mountRoute(route, { pushHistory = false, scrollTop = true } = {}) {
+function mountRoute(route, { pushHistory = false, scrollTop = true, isInitial = false } = {}) {
   const root = document.getElementById('spa-root');
   if (!root) return;
 
@@ -757,13 +866,16 @@ function mountRoute(route, { pushHistory = false, scrollTop = true } = {}) {
   }
 
   if (route === 'quotes') {
+    if (isInitial) dismissPreloader();
     currentCleanup = renderQuotesView(root) || null;
   } else if (route === 'gallery') {
+    if (isInitial) dismissPreloader();
     currentCleanup = renderGalleryView(root) || null;
   } else if (route === 'blog') {
+    if (isInitial) dismissPreloader();
     currentCleanup = renderBlogView(root) || null;
   } else {
-    currentCleanup = renderHomeView(root) || null;
+    currentCleanup = renderHomeView(root, { waitPreloader: isInitial }) || null;
   }
 
   if (scrollTop) {
@@ -775,10 +887,13 @@ document.addEventListener('DOMContentLoaded', () => {
   initLightbox();
 
   const initialRoute = resolveRouteFromLocation();
-  window.history.replaceState({ route: initialRoute }, '', window.location.pathname + window.location.hash);
-  mountRoute(initialRoute, { pushHistory: false, scrollTop: false });
+  window.history.replaceState(
+    { route: initialRoute },
+    '',
+    window.location.pathname + window.location.hash
+  );
+  mountRoute(initialRoute, { pushHistory: false, scrollTop: false, isInitial: true });
 
-  // Intercept internal SPA navigation clicks with zero hard reload
   document.addEventListener('click', (e) => {
     if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) {
       return;
@@ -791,12 +906,12 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!targetRoute || !ROUTE_META[targetRoute]) return;
 
     e.preventDefault();
-    mountRoute(targetRoute, { pushHistory: true, scrollTop: true });
+    mountRoute(targetRoute, { pushHistory: true, scrollTop: true, isInitial: false });
     document.getElementById('main-content')?.focus({ preventScroll: true });
   });
 
   window.addEventListener('popstate', (e) => {
     const nextRoute = e.state?.route || resolveRouteFromLocation();
-    mountRoute(nextRoute, { pushHistory: false, scrollTop: true });
+    mountRoute(nextRoute, { pushHistory: false, scrollTop: true, isInitial: false });
   });
 });
