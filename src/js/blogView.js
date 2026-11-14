@@ -333,7 +333,7 @@ export function renderBlogView(container) {
 
   readerShare?.addEventListener('click', async () => {
     if (!activePost) return;
-    const shareUrl = `${window.location.origin}/blog.html#${activePost.id}`;
+    const shareUrl = new URL(`./blog.html#${activePost.id}`, window.location.href).href;
     try {
       await navigator.clipboard.writeText(shareUrl);
       readerShare.textContent = 'Link Copied';

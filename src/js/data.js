@@ -1,17 +1,6 @@
-import portraitImg from '../assets/images/mariner_portrait_1794666444309.jpg';
-import vesselBackdropImg from '../assets/images/maritime_vessel_mist_1794666445117.jpg';
-import oceanSunsetImg from '../assets/images/gallery_ocean_sunset_1794666445253.jpg';
-import wildflowerImg from '../assets/images/gallery_wildflower_macro_1794666445931.jpg';
-import shipAtSeaImg from '../assets/images/gallery_ship_at_sea_1794666446387.jpg';
-import brutalistTowerImg from '../assets/images/gallery_brutalist_tower_1794666446628.jpg';
-import horizonSilhouetteImg from '../assets/images/gallery_horizon_silhouette_1794666446279.jpg';
-import stormSilhouetteImg from '../assets/images/gallery_storm_silhouette_1794666446919.jpg';
-import seabirdsSkyImg from '../assets/images/gallery_seabirds_sky_1794666448029.jpg';
-import coastalPierImg from '../assets/images/gallery_coastal_pier_1794666448189.jpg';
-
 export const HERO_MEDIA = {
-  portrait: portraitImg,
-  vesselBackdrop: vesselBackdropImg,
+  portrait: './src/assets/images/mariner_portrait_1794666444309.jpg',
+  vesselBackdrop: './src/assets/images/maritime_vessel_mist_1794666445117.jpg',
 };
 
 export const HOME_QUOTES = [
@@ -90,7 +79,7 @@ export const GALLERY_PHOTOS = [
     id: 'silver-meridian',
     title: 'Silver Meridian at Dusk',
     category: 'Seascapes',
-    src: oceanSunsetImg,
+    src: './src/assets/images/gallery_ocean_sunset_1794666445253.jpg',
     alt: 'Black-and-white photograph of sunlight breaking through heavy clouds onto open ocean waves',
     location: 'Indian Ocean · 06°14′N 81°12′E',
     year: '2025',
@@ -102,7 +91,7 @@ export const GALLERY_PHOTOS = [
     id: 'quiet-cosmos',
     title: 'Stillness After Rain',
     category: 'Solitude',
-    src: wildflowerImg,
+    src: './src/assets/images/gallery_wildflower_macro_1794666445931.jpg',
     alt: 'Monochrome macro study of a single white wildflower in bloom against a dark bokeh backdrop',
     location: 'Chittagong Coast',
     year: '2025',
@@ -114,7 +103,7 @@ export const GALLERY_PHOTOS = [
     id: 'merchant-crossing',
     title: 'Passage Under Overcast',
     category: 'Voyages',
-    src: shipAtSeaImg,
+    src: './src/assets/images/gallery_ship_at_sea_1794666446387.jpg',
     alt: 'Documentary monochrome photograph of a merchant cargo vessel crossing open ocean waters under overcast clouds',
     location: 'Malacca Strait',
     year: '2024',
@@ -126,7 +115,7 @@ export const GALLERY_PHOTOS = [
     id: 'vertical-cadence',
     title: 'Vertical Cadence',
     category: 'Architecture',
-    src: brutalistTowerImg,
+    src: './src/assets/images/gallery_brutalist_tower_1794666446628.jpg',
     alt: 'Low-angle black-and-white architectural photograph looking up at a geometric modernist skyscraper facade',
     location: 'Singapore Port District',
     year: '2024',
@@ -138,7 +127,7 @@ export const GALLERY_PHOTOS = [
     id: 'edge-of-tide',
     title: 'Edge of the Tide',
     category: 'Solitude',
-    src: horizonSilhouetteImg,
+    src: './src/assets/images/gallery_horizon_silhouette_1794666446279.jpg',
     alt: 'Minimalist black-and-white photograph of a solitary silhouette standing on wet beach sand facing a misty ocean horizon',
     location: 'Cox’s Bazar Shoreline',
     year: '2025',
@@ -150,7 +139,7 @@ export const GALLERY_PHOTOS = [
     id: 'before-the-squall',
     title: 'Before the Squall',
     category: 'Voyages',
-    src: stormSilhouetteImg,
+    src: './src/assets/images/gallery_storm_silhouette_1794666446919.jpg',
     alt: 'Dramatic monochrome photo of a coastal figure silhouetted against dark storm clouds and ocean surf',
     location: 'Arabian Sea Coast',
     year: '2024',
@@ -162,7 +151,7 @@ export const GALLERY_PHOTOS = [
     id: 'gulls-in-formation',
     title: 'Bearing North',
     category: 'Seascapes',
-    src: seabirdsSkyImg,
+    src: './src/assets/images/gallery_seabirds_sky_1794666448029.jpg',
     alt: 'Minimalist monochrome photograph of a flock of seabirds flying in formation across a bright overcast sky',
     location: 'Suez Approach',
     year: '2025',
@@ -174,7 +163,7 @@ export const GALLERY_PHOTOS = [
     id: 'concrete-causeway',
     title: 'Span Across Calm Water',
     category: 'Architecture',
-    src: coastalPierImg,
+    src: './src/assets/images/gallery_coastal_pier_1794666448189.jpg',
     alt: 'Wide black-and-white architectural view of a long concrete sea bridge stretching across calm dark water',
     location: 'Colombo Outer Harbor',
     year: '2024',
@@ -192,7 +181,7 @@ export const INITIAL_BLOG_POSTS = [
     date: 'November 2026',
     readTime: '4 min read',
     location: '06°14′N 81°12′E',
-    coverSrc: oceanSunsetImg,
+    coverSrc: './src/assets/images/gallery_ocean_sunset_1794666445253.jpg',
     coverAlt: 'Sunlight breaking through dark ocean clouds over rippling waves',
     excerpt:
       'When the bridge lights dim to amber and the radar sweeps in quiet circles, the sea reveals a stillness rarely found ashore.',
@@ -209,7 +198,7 @@ export const INITIAL_BLOG_POSTS = [
     date: 'October 2026',
     readTime: '3 min read',
     location: 'Malacca Strait',
-    coverSrc: shipAtSeaImg,
+    coverSrc: './src/assets/images/gallery_ship_at_sea_1794666446387.jpg',
     coverAlt: 'Merchant cargo vessel crossing open ocean waters in monochrome',
     excerpt:
       'Removing color strips away tourist postcard clichés and leaves behind texture, scale, and the quiet tension between water and sky.',
@@ -226,7 +215,7 @@ export const INITIAL_BLOG_POSTS = [
     date: 'September 2026',
     readTime: '5 min read',
     location: 'Colombo & Singapore',
-    coverSrc: coastalPierImg,
+    coverSrc: './src/assets/images/gallery_coastal_pier_1794666448189.jpg',
     coverAlt: 'Long concrete coastal bridge stretching over calm dark water',
     excerpt:
       'After fourteen days of unbroken ocean horizon, stepping onto solid concrete feels surreal—and every street corner becomes a study in vertical lines.',

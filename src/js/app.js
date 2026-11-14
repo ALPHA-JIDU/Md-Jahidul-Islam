@@ -1,4 +1,3 @@
-import '../index.css';
 import { HERO_MEDIA, HOME_QUOTES, GALLERY_PHOTOS } from './data.js';
 import { bindImageShimmer, initExistingShimmers, createFallbackTile } from './shimmer.js';
 import { initLightbox, openLightbox } from './lightbox.js';
@@ -8,29 +7,29 @@ import { renderBlogView } from './blogView.js';
 
 const ROUTE_META = {
   home: {
-    path: 'index.html',
+    path: './index.html',
     title: 'Jahidul Islam Jihad — Mariner & Photographer',
   },
   quotes: {
-    path: 'quotes.html',
+    path: './quotes.html',
     title: 'Quotes — Jahidul Islam Jihad',
   },
   gallery: {
-    path: 'gallery.html',
+    path: './gallery.html',
     title: 'Gallery — Jahidul Islam Jihad',
   },
   blog: {
-    path: 'blog.html',
+    path: './blog.html',
     title: 'Sea Journal & Blog — Jahidul Islam Jihad',
   },
 };
 
 function resolveRouteFromLocation() {
   const path = window.location.pathname.toLowerCase();
-  if (path.endsWith('/quotes.html') || path === '/quotes') return 'quotes';
-  if (path.endsWith('/gallery.html') || path === '/gallery') return 'gallery';
-  if (path.endsWith('/blog.html') || path === '/blog') return 'blog';
-  if (path.endsWith('/index.html') || path === '/') return 'home';
+  if (path.endsWith('/quotes.html') || path.endsWith('/quotes')) return 'quotes';
+  if (path.endsWith('/gallery.html') || path.endsWith('/gallery')) return 'gallery';
+  if (path.endsWith('/blog.html') || path.endsWith('/blog')) return 'blog';
+  if (path.endsWith('/index.html')) return 'home';
   return document.body.getAttribute('data-route') || 'home';
 }
 

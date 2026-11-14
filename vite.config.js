@@ -1,4 +1,5 @@
 import tailwindcss from '@tailwindcss/vite';
+import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { defineConfig } from 'vite';
@@ -6,9 +7,31 @@ import { defineConfig } from 'vite';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+function copyStaticAssetsPlugin() {
+  return {
+    name: 'copy-static-images',
+    closeBundle() {
+      const srcDir = path.resolve(__dirname, 'src/assets/images');
+      const destDir = path.resolve(__dirname, 'dist/src/assets/images');
+      if (fs.existsSync(srcDir)) {
+        fs.mkdirSync(destDir, { recursive: true });
+        for (const file of fs.readdirSync(srcDir)) {
+          fs.copyFileSync(path.join(srcDir, file), path.join(destDir, file));
+        }
+      }
+      const nojekyllSrc = path.resolve(__dirname, '.nojekyll');
+      const nojekyllDest = path.resolve(__dirname, 'dist/.nojekyll');
+      if (fs.existsSync(nojekyllSrc)) {
+        fs.copyFileSync(nojekyllSrc, nojekyllDest);
+      }
+    },
+  };
+}
+
 export default defineConfig(() => {
   return {
-    plugins: [tailwindcss()],
+    base: './',
+    plugins: [tailwindcss(), copyStaticAssetsPlugin()],
     resolve: {
       alias: {
         '@': path.resolve(__dirname, '.'),
