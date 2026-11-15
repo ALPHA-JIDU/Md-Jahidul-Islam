@@ -204,7 +204,7 @@ function renderHomeView(container, { waitPreloader = false } = {}) {
             </div>
           </div>
 
-          <div class="relative z-10 max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 pt-44 sm:pt-52 pb-10 md:py-20 lg:py-24">
+          <div class="relative z-10 max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 pt-56 sm:pt-64 pb-10 md:py-20 lg:py-24">
             <div class="grid grid-cols-1 md:grid-cols-12 gap-8 lg:gap-12 items-center">
               <!-- Editorial Typography Column Overlaid on Background Shadow -->
               <div class="md:col-span-5 flex flex-col justify-between md:min-h-[420px] lg:min-h-[460px]">
