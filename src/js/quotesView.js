@@ -133,9 +133,8 @@ Live deeper.</blockquote>
       </main>
 
       <footer class="border-t border-white/8 bg-[#080808]">
-        <div class="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 py-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-neutral-400">
+        <div class="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 py-6 flex items-center justify-center text-center text-xs text-neutral-400">
           <p>&copy; 2026 Jahidul Islam Jihad. All rights reserved.</p>
-          <p>Designed with passion &middot; Inspired by the sea</p>
         </div>
       </footer>
     </div>

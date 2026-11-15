@@ -49,8 +49,8 @@
 }
 
 .preloader-overlay {
-  transition: opacity 450ms cubic-bezier(0.16, 1, 0.3, 1),
-    visibility 450ms cubic-bezier(0.16, 1, 0.3, 1);
+  transition: opacity 420ms cubic-bezier(0.16, 1, 0.3, 1),
+    visibility 420ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .preloader-overlay.is-hidden {
@@ -59,67 +59,115 @@
   pointer-events: none;
 }
 
-/* Ship & 2-Line Wave Scroll Indicator */
-@keyframes shipBob {
-  0%,
-  100% {
-    transform: translateY(0px) rotate(-1.5deg);
+/* Realistic Smooth Ship Heave & Continuous 2-Line Wave Scroll */
+@keyframes shipSwellMotion {
+  0% {
+    transform: translateY(0.8px) rotate(-1.6deg);
+  }
+  25% {
+    transform: translateY(-1.4px) rotate(0.4deg);
   }
   50% {
-    transform: translateY(-2.5px) rotate(1.5deg);
+    transform: translateY(-2.2px) rotate(1.7deg);
   }
-}
-
-@keyframes waveDriftA {
-  0%,
+  75% {
+    transform: translateY(0.2px) rotate(-0.5deg);
+  }
   100% {
-    transform: translateX(0px);
-  }
-  50% {
-    transform: translateX(-5px);
+    transform: translateY(0.8px) rotate(-1.6deg);
   }
 }
 
-@keyframes waveDriftB {
-  0%,
+@keyframes continuousWaveA {
+  0% {
+    transform: translateX(0);
+  }
   100% {
-    transform: translateX(-4px);
-  }
-  50% {
-    transform: translateX(3px);
+    transform: translateX(-50%);
   }
 }
 
-.ship-bob {
-  transform-origin: center bottom;
-  animation: shipBob 2.8s ease-in-out infinite;
+@keyframes continuousWaveB {
+  0% {
+    transform: translateX(-50%);
+  }
+  100% {
+    transform: translateX(0);
+  }
 }
 
-.wave-line-1 {
-  animation: waveDriftA 2.4s ease-in-out infinite;
+.ship-swell {
+  transform-origin: 42px 23px;
+  animation: shipSwellMotion 4.4s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite;
 }
 
-.wave-line-2 {
-  animation: waveDriftB 3s ease-in-out infinite;
+.wave-track-1 {
+  animation: continuousWaveA 3.6s linear infinite;
 }
 
-/* Hero portrait vignette overlays for seamless obsidian blending */
-.hero-portrait-vignette-desktop {
-  background:
-    radial-gradient(ellipse 46% 64% at 54% 40%, transparent 32%, rgba(8, 8, 8, 0.72) 72%, #080808 96%),
-    linear-gradient(to right, #080808 0%, rgba(8, 8, 8, 0.85) 18%, transparent 44%, transparent 74%, #080808 100%),
-    linear-gradient(to top, #080808 0%, rgba(8, 8, 8, 0.65) 16%, transparent 42%),
-    linear-gradient(to bottom, rgba(8, 8, 8, 0.65) 0%, transparent 22%);
+.wave-track-2 {
+  animation: continuousWaveB 5.2s linear infinite;
 }
 
-.hero-portrait-vignette-mobile {
-  background:
-    radial-gradient(ellipse 70% 56% at 50% 34%, transparent 34%, rgba(8, 8, 8, 0.7) 78%, #080808 100%),
-    linear-gradient(to top, #080808 0%, #080808 18%, rgba(8, 8, 8, 0.85) 38%, rgba(8, 8, 8, 0.35) 58%, transparent 78%),
-    linear-gradient(to bottom, rgba(8, 8, 8, 0.5) 0%, transparent 20%);
+.wave-viewport-mask {
+  -webkit-mask-image: linear-gradient(to right, transparent 0%, #000 18%, #000 82%, transparent 100%);
+  mask-image: linear-gradient(to right, transparent 0%, #000 18%, #000 82%, transparent 100%);
 }
 
-/* Auto-scrolling quote transition */
+/* Darkroom Radial Vignette Shadow for Header Background Portrait */
+.hero-portrait-vignette {
+  background: radial-gradient(
+    ellipse 74% 78% at 62% 36%,
+    rgba(8, 8, 8, 0) 20%,
+    rgba(8, 8, 8, 0.58) 62%,
+    rgba(8, 8, 8, 0.96) 94%
+  );
+}
+
+@media (max-width: 767px) {
+  .hero-portrait-vignette {
+    background: radial-gradient(
+      ellipse 88% 68% at 50% 24%,
+      rgba(8, 8, 8, 0.04) 18%,
+      rgba(8, 8, 8, 0.68) 60%,
+      rgba(8, 8, 8, 0.98) 90%
+    );
+  }
+}
+
+/* Tactile click ripple effect on social icons */
+@keyframes socialClickPulse {
+  0% {
+    transform: scale(0.9);
+    box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.45);
+  }
+  65% {
+    transform: scale(1.04);
+    box-shadow: 0 0 0 9px rgba(255, 255, 255, 0);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(255, 255, 255, 0);
+  }
+}
+
+.social-icon-btn {
+  transition: transform 200ms cubic-bezier(0.16, 1, 0.3, 1),
+    background-color 200ms ease,
+    color 200ms ease,
+    border-color 200ms ease,
+    box-shadow 200ms ease;
+}
+
+.social-icon-btn:active {
+  transform: scale(0.9) translateY(0);
+}
+
+.social-icon-btn.is-clicked {
+  animation: socialClickPulse 380ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Auto-scrolling quote & signature transition */
 .quote-stage {
   transition: opacity 380ms cubic-bezier(0.16, 1, 0.3, 1),
     transform 380ms cubic-bezier(0.16, 1, 0.3, 1);

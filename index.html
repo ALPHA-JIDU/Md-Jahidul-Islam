@@ -60,6 +60,18 @@
       </p>
     </div>
 
+    <!-- Track preloader start time and fail-safe timer for broken network edges -->
+    <script>
+      window.__preloaderStart = Date.now();
+      window.setTimeout(function () {
+        var el = document.getElementById('page-preloader');
+        if (el && !el.classList.contains('is-hidden')) {
+          el.classList.add('is-hidden');
+          el.setAttribute('aria-hidden', 'true');
+        }
+      }, 8500);
+    </script>
+
     <a
       href="#main-content"
       class="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-50 focus:px-4 focus:py-2.5 focus:rounded-md focus:bg-white focus:text-neutral-950 focus:text-sm focus:font-medium focus:shadow-lg"

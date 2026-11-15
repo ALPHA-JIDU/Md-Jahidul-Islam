@@ -1,6 +1,5 @@
 export const HERO_MEDIA = {
   portrait: './src/assets/images/Picsart_26-11-14_22-21-08-763_d8c22dd8.jpg',
-  vesselBackdrop: './src/assets/images/maritime_vessel_mist_1794666445117.jpg',
 };
 
 export const HOME_QUOTES = [
@@ -10,6 +9,7 @@ export const HOME_QUOTES = [
     theme: 'Horizons',
     text: 'Dream big,\nCapture more,\nLive deeper.',
     attribution: 'Jihad',
+    signatureId: 'jihad-classic',
     context: 'Personal Manifesto',
   },
   {
@@ -17,7 +17,8 @@ export const HOME_QUOTES = [
     indexLabel: '02 / 04',
     theme: 'At Sea',
     text: 'The ocean teaches patience;\nthe shutter teaches presence.',
-    attribution: 'Jihad',
+    attribution: 'J. I. Jihad',
+    signatureId: 'jihad-monogram',
     context: 'Bay of Bengal Passage',
   },
   {
@@ -25,7 +26,8 @@ export const HOME_QUOTES = [
     indexLabel: '03 / 04',
     theme: 'Photography',
     text: 'Between distant ports,\nlight writes quiet stories\nin silver and shadow.',
-    attribution: 'Jihad',
+    attribution: 'Jihad — Lens',
+    signatureId: 'jihad-lens',
     context: 'Bridge Watch Notes',
   },
   {
@@ -33,7 +35,8 @@ export const HOME_QUOTES = [
     indexLabel: '04 / 04',
     theme: 'Solitude',
     text: 'Every horizon is an invitation\nto look once more\nwith beginner eyes.',
-    attribution: 'Jihad',
+    attribution: 'Jahidul Islam',
+    signatureId: 'jahidul-full',
     context: 'Port Said Anchorage',
   },
 ];
