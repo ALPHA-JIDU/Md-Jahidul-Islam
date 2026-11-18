@@ -337,6 +337,14 @@ export function renderBlogView(container) {
       shareCheckIcon.classList.add('hidden');
     }
 
+    if (window.location.hash !== `#${post.id}`) {
+      window.history.replaceState(
+        window.history.state,
+        '',
+        `${window.location.pathname}${window.location.search}#${post.id}`
+      );
+    }
+
     readerModal?.classList.remove('hidden');
     readerModal?.classList.add('flex');
     document.body.style.overflow = 'hidden';
@@ -348,6 +356,15 @@ export function renderBlogView(container) {
     readerModal?.classList.remove('flex');
     document.body.style.overflow = '';
     activePost = null;
+
+    if (window.location.hash) {
+      window.history.replaceState(
+        window.history.state,
+        '',
+        `${window.location.pathname}${window.location.search}`
+      );
+    }
+
     if (lastFocusedEl && typeof lastFocusedEl.focus === 'function') {
       lastFocusedEl.focus();
     }
@@ -500,9 +517,22 @@ export function renderBlogView(container) {
     });
   });
 
+  function openPostFromHash() {
+    const hashId = window.location.hash.replace(/^#/, '').trim();
+    if (!hashId) return;
+    const matched = posts.find((p) => p.id === hashId);
+    if (matched && activePost?.id !== matched.id) {
+      openReader(matched);
+    }
+  }
+
   renderFeed();
+  openPostFromHash();
+  window.addEventListener('hashchange', openPostFromHash);
 
   return () => {
     document.removeEventListener('keydown', handleEscape);
+    window.removeEventListener('hashchange', openPostFromHash);
+    document.body.style.overflow = '';
   };
 }

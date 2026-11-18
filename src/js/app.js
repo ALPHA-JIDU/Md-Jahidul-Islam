@@ -9,18 +9,22 @@ const ROUTE_META = {
   home: {
     path: './index.html',
     title: 'Jahidul Islam Jihad — Mariner & Photographer',
+    label: 'Home',
   },
   quotes: {
     path: './quotes.html',
     title: 'Quotes — Jahidul Islam Jihad',
+    label: 'Quotes',
   },
   gallery: {
     path: './gallery.html',
     title: 'Gallery — Jahidul Islam Jihad',
+    label: 'Gallery',
   },
   blog: {
     path: './blog.html',
     title: 'Sea Journal & Blog — Jahidul Islam Jihad',
+    label: 'Sea Journal',
   },
 };
 
@@ -33,6 +37,61 @@ function resolveRouteFromLocation() {
   return document.body.getAttribute('data-route') || 'home';
 }
 
+function waitForImagesAndMinTime(
+  images,
+  minDurationMs,
+  startTime,
+  onComplete,
+  maxTimeoutMs = 8000
+) {
+  let done = false;
+  const finishIfReady = () => {
+    if (done) return;
+    done = true;
+    const elapsed = Date.now() - startTime;
+    const remaining = Math.max(0, minDurationMs - elapsed);
+    if (remaining === 0) {
+      onComplete();
+    } else {
+      window.setTimeout(onComplete, remaining);
+    }
+  };
+
+  const validImgs = Array.from(images || []).filter(Boolean);
+  if (validImgs.length === 0) {
+    finishIfReady();
+    return;
+  }
+
+  let settledCount = 0;
+  const markOneSettled = () => {
+    settledCount += 1;
+    if (settledCount >= validImgs.length) {
+      finishIfReady();
+    }
+  };
+
+  validImgs.forEach((img) => {
+    if (img.complete) {
+      markOneSettled();
+      return;
+    }
+    let marked = false;
+    const mark = () => {
+      if (marked) return;
+      marked = true;
+      markOneSettled();
+    };
+    img.addEventListener('load', mark, { once: true });
+    img.addEventListener('error', mark, { once: true });
+    if (typeof img.decode === 'function') {
+      img.decode().then(mark).catch(() => {});
+    }
+  });
+
+  window.setTimeout(finishIfReady, maxTimeoutMs);
+}
+
 function dismissPreloader() {
   const preloader = document.getElementById('page-preloader');
   if (!preloader) return;
@@ -43,47 +102,104 @@ function dismissPreloader() {
   }, 460);
 }
 
-function waitForPortraitPreload(portraitImgEl) {
+function waitForInitialPreload(images) {
   const preloader = document.getElementById('page-preloader');
-  if (!preloader || !portraitImgEl) {
-    dismissPreloader();
+  if (!preloader) {
     return;
   }
 
   const startTime =
     typeof window.__preloaderStart === 'number' ? window.__preloaderStart : Date.now();
-  const minDurationMs = 700;
-  let portraitLoaded = false;
-  let scheduled = false;
+  waitForImagesAndMinTime(images, 700, startTime, dismissPreloader, 8000);
+}
 
-  const finish = () => {
-    if (portraitLoaded) return;
-    portraitLoaded = true;
-    if (scheduled) return;
-    scheduled = true;
+let compassHideTimer = null;
 
-    const elapsed = Date.now() - startTime;
-    const remaining = Math.max(0, minDurationMs - elapsed);
-    if (remaining === 0) {
-      dismissPreloader();
-    } else {
-      window.setTimeout(dismissPreloader, remaining);
+function ensureCompassOverlay() {
+  let overlay = document.getElementById('route-compass-loader');
+  if (overlay) return overlay;
+
+  overlay = document.createElement('div');
+  overlay.id = 'route-compass-loader';
+  overlay.setAttribute('role', 'status');
+  overlay.setAttribute('aria-live', 'polite');
+  overlay.setAttribute('aria-hidden', 'true');
+  overlay.className =
+    'route-compass-overlay is-hidden fixed inset-0 z-50 flex flex-col items-center justify-center bg-[#080808]/95 backdrop-blur-sm';
+
+  overlay.innerHTML = `
+    <svg
+      viewBox="0 0 96 96"
+      class="w-20 h-20 text-neutral-200"
+      fill="none"
+      aria-hidden="true"
+    >
+      <!-- Outer Compass Bezel -->
+      <circle cx="48" cy="48" r="38" stroke="currentColor" stroke-opacity="0.24" stroke-width="1.25" />
+      <circle cx="48" cy="48" r="32" stroke="currentColor" stroke-opacity="0.65" stroke-width="1.5" />
+
+      <!-- Slowly Rotating Degree Rose & Ticks -->
+      <g class="compass-rose-spin">
+        <line x1="48" y1="10" x2="48" y2="17" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" />
+        <line x1="48" y1="79" x2="48" y2="86" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" />
+        <line x1="10" y1="48" x2="17" y2="48" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" />
+        <line x1="79" y1="48" x2="86" y2="48" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" />
+        <line x1="21.1" y1="21.1" x2="25.5" y2="25.5" stroke="currentColor" stroke-opacity="0.55" stroke-width="1.3" stroke-linecap="round" />
+        <line x1="70.5" y1="70.5" x2="74.9" y2="74.9" stroke="currentColor" stroke-opacity="0.55" stroke-width="1.3" stroke-linecap="round" />
+        <line x1="74.9" y1="21.1" x2="70.5" y2="25.5" stroke="currentColor" stroke-opacity="0.55" stroke-width="1.3" stroke-linecap="round" />
+        <line x1="25.5" y1="70.5" x2="21.1" y2="74.9" stroke="currentColor" stroke-opacity="0.55" stroke-width="1.3" stroke-linecap="round" />
+      </g>
+
+      <!-- Cardinal Labels -->
+      <text x="48" y="25" text-anchor="middle" fill="currentColor" font-size="6.5" font-weight="600" letter-spacing="0.12em">N</text>
+      <text x="48" y="75.5" text-anchor="middle" fill="currentColor" fill-opacity="0.5" font-size="5.5" letter-spacing="0.12em">S</text>
+      <text x="72.5" y="50" text-anchor="middle" fill="currentColor" fill-opacity="0.5" font-size="5.5" letter-spacing="0.12em">E</text>
+      <text x="23.5" y="50" text-anchor="middle" fill="currentColor" fill-opacity="0.5" font-size="5.5" letter-spacing="0.12em">W</text>
+
+      <!-- Oscillating Marine Compass Needle -->
+      <g class="compass-needle-seek">
+        <polygon points="48,22 52.2,48 48,45 43.8,48" fill="currentColor" />
+        <polygon points="48,74 52.2,48 48,51 43.8,48" fill="currentColor" fill-opacity="0.28" stroke="currentColor" stroke-opacity="0.6" stroke-width="0.9" />
+      </g>
+
+      <!-- Pivot Cap -->
+      <circle cx="48" cy="48" r="3" fill="#080808" stroke="currentColor" stroke-width="1.5" />
+    </svg>
+    <p id="route-compass-label" class="mt-4 font-serif italic text-xs tracking-[0.22em] text-neutral-300">
+      Charting Course
+    </p>
+  `;
+
+  document.body.appendChild(overlay);
+  return overlay;
+}
+
+function showCompassLoader(routeLabel) {
+  if (compassHideTimer !== null) {
+    window.clearTimeout(compassHideTimer);
+    compassHideTimer = null;
+  }
+  const overlay = ensureCompassOverlay();
+  const labelEl = overlay.querySelector('#route-compass-label');
+  if (labelEl) {
+    labelEl.textContent = routeLabel ? `Navigating · ${routeLabel}` : 'Charting Course';
+  }
+  overlay.style.display = 'flex';
+  void overlay.offsetWidth;
+  overlay.classList.remove('is-hidden');
+  overlay.setAttribute('aria-hidden', 'false');
+}
+
+function hideCompassLoader() {
+  const overlay = document.getElementById('route-compass-loader');
+  if (!overlay) return;
+  overlay.classList.add('is-hidden');
+  overlay.setAttribute('aria-hidden', 'true');
+  compassHideTimer = window.setTimeout(() => {
+    if (overlay.classList.contains('is-hidden')) {
+      overlay.style.display = 'none';
     }
-  };
-
-  if (portraitImgEl.complete && portraitImgEl.naturalWidth > 0) {
-    finish();
-    return;
-  }
-
-  portraitImgEl.addEventListener('load', finish, { once: true });
-  portraitImgEl.addEventListener('error', finish, { once: true });
-
-  if (typeof portraitImgEl.decode === 'function') {
-    portraitImgEl.decode().then(finish).catch(() => {});
-  }
-
-  window.setTimeout(finish, 8000);
+  }, 280);
 }
 
 function renderShipWaveIndicator() {
@@ -420,9 +536,23 @@ Live deeper.</blockquote>
               </a>
             </div>
 
+            <!-- Mobile Horizontal Strip with Right-Edge Fade Hint & Pagination Dots -->
+            <div class="md:hidden relative">
+              <div
+                id="mobile-gallery-strip"
+                class="flex gap-3 overflow-x-auto snap-x snap-mandatory pb-2 pr-10 no-scrollbar"
+              ></div>
+              <div
+                id="mobile-gallery-fade"
+                aria-hidden="true"
+                class="pointer-events-none absolute inset-y-0 right-0 w-12 bg-gradient-to-l from-[#080808] via-[#080808]/75 to-transparent transition-opacity duration-200"
+              ></div>
+            </div>
             <div
-              id="mobile-gallery-strip"
-              class="md:hidden flex gap-3 overflow-x-auto snap-x snap-mandatory pb-2 no-scrollbar"
+              id="mobile-gallery-dots"
+              role="group"
+              aria-label="Mobile gallery slide indicators"
+              class="md:hidden mt-4 flex items-center justify-center gap-1.5"
             ></div>
 
             <div id="desktop-bento-grid" class="hidden md:grid md:grid-cols-12 gap-3"></div>
@@ -609,7 +739,7 @@ Live deeper.</blockquote>
   `;
 
   if (waitPreloader) {
-    waitForPortraitPreload(container.querySelector('#hero-portrait'));
+    waitForInitialPreload([container.querySelector('#hero-portrait')]);
   }
 
   // Initialize Auto-Scrolling Quotes & Swapping Signatures
@@ -730,14 +860,76 @@ Live deeper.</blockquote>
   }
 
   const mobileTrack = container.querySelector('#mobile-gallery-strip');
+  const mobileFade = container.querySelector('#mobile-gallery-fade');
+  const mobileDots = container.querySelector('#mobile-gallery-dots');
   const desktopBento = container.querySelector('#desktop-bento-grid');
+
+  const mobileTileButtons = [];
+  const mobileDotButtons = [];
+  let onMobileStripScroll = null;
 
   if (mobileTrack) {
     GALLERY_PHOTOS.forEach((photo, idx) => {
-      mobileTrack.appendChild(
-        createTile(photo, idx, 'snap-start shrink-0 w-[42vw] min-w-[148px] max-w-[200px] aspect-[4/3]')
+      const tile = createTile(
+        photo,
+        idx,
+        'snap-start shrink-0 w-[42vw] min-w-[148px] max-w-[200px] aspect-[4/3]'
       );
+      mobileTileButtons.push(tile);
+      mobileTrack.appendChild(tile);
+
+      if (mobileDots) {
+        const dot = document.createElement('button');
+        dot.type = 'button';
+        dot.setAttribute('aria-label', `Jump to photo ${idx + 1}: ${photo.title}`);
+        dot.className =
+          idx === 0
+            ? 'h-1.5 w-5 rounded-full bg-white transition-all duration-200 cursor-pointer'
+            : 'h-1.5 w-1.5 rounded-full bg-white/25 hover:bg-white/50 transition-all duration-200 cursor-pointer';
+        dot.addEventListener('click', () => {
+          tile.scrollIntoView({ behavior: 'smooth', inline: 'start', block: 'nearest' });
+        });
+        mobileDotButtons.push(dot);
+        mobileDots.appendChild(dot);
+      }
     });
+
+    const syncMobileGalleryIndicators = () => {
+      const maxScroll = mobileTrack.scrollWidth - mobileTrack.clientWidth;
+      if (mobileFade) {
+        if (maxScroll <= 8 || mobileTrack.scrollLeft >= maxScroll - 8) {
+          mobileFade.classList.add('opacity-0');
+        } else {
+          mobileFade.classList.remove('opacity-0');
+        }
+      }
+
+      if (mobileDotButtons.length > 0 && mobileTileButtons.length > 0) {
+        let closestIdx = 0;
+        let smallestDist = Infinity;
+        const currentScroll = mobileTrack.scrollLeft;
+        mobileTileButtons.forEach((tile, i) => {
+          const dist = Math.abs(tile.offsetLeft - currentScroll);
+          if (dist < smallestDist) {
+            smallestDist = dist;
+            closestIdx = i;
+          }
+        });
+        if (maxScroll > 0 && currentScroll >= maxScroll - 4) {
+          closestIdx = mobileDotButtons.length - 1;
+        }
+        mobileDotButtons.forEach((dot, i) => {
+          dot.className =
+            i === closestIdx
+              ? 'h-1.5 w-5 rounded-full bg-white transition-all duration-200 cursor-pointer'
+              : 'h-1.5 w-1.5 rounded-full bg-white/25 hover:bg-white/50 transition-all duration-200 cursor-pointer';
+        });
+      }
+    };
+
+    onMobileStripScroll = syncMobileGalleryIndicators;
+    mobileTrack.addEventListener('scroll', onMobileStripScroll, { passive: true });
+    window.requestAnimationFrame(syncMobileGalleryIndicators);
   }
 
   if (desktopBento) {
@@ -850,35 +1042,50 @@ Live deeper.</blockquote>
 
   return () => {
     if (timerId !== null) window.clearInterval(timerId);
+    if (mobileTrack && onMobileStripScroll) {
+      mobileTrack.removeEventListener('scroll', onMobileStripScroll);
+    }
   };
 }
 
 let currentCleanup = null;
+let currentActiveRoute = null;
+let routeTransitionSeq = 0;
 
 function mountRoute(route, { pushHistory = false, scrollTop = true, isInitial = false } = {}) {
   const root = document.getElementById('spa-root');
   if (!root) return;
+
+  const targetRoute = ROUTE_META[route] ? route : 'home';
+  if (!isInitial && targetRoute === currentActiveRoute) {
+    return;
+  }
+
+  const transitionId = ++routeTransitionSeq;
+  const switchStartTime = Date.now();
+
+  if (!isInitial) {
+    showCompassLoader(ROUTE_META[targetRoute].label);
+  }
 
   if (typeof currentCleanup === 'function') {
     currentCleanup();
     currentCleanup = null;
   }
 
-  const meta = ROUTE_META[route] || ROUTE_META.home;
+  currentActiveRoute = targetRoute;
+  const meta = ROUTE_META[targetRoute];
   document.title = meta.title;
 
   if (pushHistory) {
-    window.history.pushState({ route }, '', meta.path);
+    window.history.pushState({ route: targetRoute }, '', meta.path);
   }
 
-  if (route === 'quotes') {
-    if (isInitial) dismissPreloader();
+  if (targetRoute === 'quotes') {
     currentCleanup = renderQuotesView(root) || null;
-  } else if (route === 'gallery') {
-    if (isInitial) dismissPreloader();
+  } else if (targetRoute === 'gallery') {
     currentCleanup = renderGalleryView(root) || null;
-  } else if (route === 'blog') {
-    if (isInitial) dismissPreloader();
+  } else if (targetRoute === 'blog') {
     currentCleanup = renderBlogView(root) || null;
   } else {
     currentCleanup = renderHomeView(root, { waitPreloader: isInitial }) || null;
@@ -887,6 +1094,29 @@ function mountRoute(route, { pushHistory = false, scrollTop = true, isInitial = 
   if (scrollTop) {
     window.scrollTo({ top: 0, behavior: 'auto' });
   }
+
+  if (isInitial) {
+    if (targetRoute !== 'home') {
+      waitForInitialPreload(root.querySelectorAll('img'));
+    }
+    return;
+  }
+
+  const targetImages =
+    targetRoute === 'home'
+      ? [root.querySelector('#hero-portrait')].filter(Boolean)
+      : root.querySelectorAll('img');
+
+  waitForImagesAndMinTime(
+    targetImages,
+    500,
+    switchStartTime,
+    () => {
+      if (transitionId !== routeTransitionSeq) return;
+      hideCompassLoader();
+    },
+    8000
+  );
 }
 
 function bootApp() {
@@ -896,7 +1126,7 @@ function bootApp() {
   window.history.replaceState(
     { route: initialRoute },
     '',
-    window.location.pathname + window.location.hash
+    window.location.pathname + window.location.search + window.location.hash
   );
   mountRoute(initialRoute, { pushHistory: false, scrollTop: false, isInitial: true });
 

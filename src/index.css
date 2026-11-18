@@ -59,6 +59,55 @@
   pointer-events: none;
 }
 
+/* Marine Compass Page-Switching Loader Animation */
+@keyframes compassRoseRotate {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes compassNeedleSweep {
+  0% {
+    transform: rotate(-38deg);
+  }
+  35% {
+    transform: rotate(16deg);
+  }
+  65% {
+    transform: rotate(-10deg);
+  }
+  85% {
+    transform: rotate(4deg);
+  }
+  100% {
+    transform: rotate(-38deg);
+  }
+}
+
+.compass-rose-spin {
+  transform-origin: 48px 48px;
+  animation: compassRoseRotate 12s linear infinite;
+}
+
+.compass-needle-seek {
+  transform-origin: 48px 48px;
+  animation: compassNeedleSweep 2.4s cubic-bezier(0.37, 0, 0.63, 1) infinite;
+}
+
+.route-compass-overlay {
+  transition: opacity 260ms cubic-bezier(0.16, 1, 0.3, 1),
+    visibility 260ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.route-compass-overlay.is-hidden {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
 /* Realistic Smooth Ship Heave & Continuous 2-Line Wave Scroll */
 @keyframes shipSwellMotion {
   0% {

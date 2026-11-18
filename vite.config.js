@@ -24,6 +24,11 @@ function copyStaticAssetsPlugin() {
       if (fs.existsSync(nojekyllSrc)) {
         fs.copyFileSync(nojekyllSrc, nojekyllDest);
       }
+      const faviconSrc = path.resolve(__dirname, 'favicon.svg');
+      const faviconDest = path.resolve(__dirname, 'dist/favicon.svg');
+      if (fs.existsSync(faviconSrc)) {
+        fs.copyFileSync(faviconSrc, faviconDest);
+      }
     },
   };
 }
